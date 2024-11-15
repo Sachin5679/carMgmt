@@ -1,5 +1,6 @@
 const express = require('express');
 const { addCar, getUserCars, viewSpecificCar, updateDetails, deleteCar } = require('../controllers/carController');
+const upload = require('../middlewares/multerConfig');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -10,41 +11,36 @@ const router = express.Router();
  *     summary: Add a new car
  *     tags: [Cars]
  *     security:
- *       - bearerAuth: []
+ *       - bearerAuth: []  # Security definition for Bearer Authentication
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               title:
  *                 type: string
- *                 description: The title of the car
- *                 example: "Toyota Prius"
  *               description:
  *                 type: string
- *                 description: A description of the car
- *                 example: "A hybrid car with excellent fuel efficiency"
  *               images:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Array of image URLs
- *                 example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+ *                   format: binary
  *               tags:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Tags related to the car
- *                 example: ["hybrid", "fuel-efficient"]
  *     responses:
  *       201:
  *         description: Car added successfully
  *       400:
  *         description: Failed to add car
+ *       403:
+ *         description: Unauthorized - No token provided
  */
-router.post('/addcar', verifyToken, addCar);
+router.post('/addcar', verifyToken, upload.array('images', 5), addCar);
 
 /**
  * @swagger
@@ -74,7 +70,7 @@ router.get('/mycars', verifyToken, getUserCars);
  *       - in: path
  *         name: id
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
  *         description: Car ID
  *         example: 1
@@ -84,7 +80,7 @@ router.get('/mycars', verifyToken, getUserCars);
  *       404:
  *         description: Car not found
  */
-router.get('/cars/:id', verifyToken, viewSpecificCar);
+router.get('/:carId', verifyToken, viewSpecificCar);
 
 /**
  * @swagger
@@ -98,7 +94,7 @@ router.get('/cars/:id', verifyToken, viewSpecificCar);
  *       - in: path
  *         name: id
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
  *         description: Car ID
  *         example: 1
@@ -135,7 +131,7 @@ router.get('/cars/:id', verifyToken, viewSpecificCar);
  *       404:
  *         description: Car not found
  */
-router.patch('/cars/:id', verifyToken, updateDetails);
+router.patch('/:carId', verifyToken, updateDetails);
 
 /**
  * @swagger
@@ -149,7 +145,7 @@ router.patch('/cars/:id', verifyToken, updateDetails);
  *       - in: path
  *         name: id
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
  *         description: Car ID
  *         example: 1
@@ -159,6 +155,6 @@ router.patch('/cars/:id', verifyToken, updateDetails);
  *       404:
  *         description: Car not found
  */
-router.delete('/cars/:id', verifyToken, deleteCar);
+router.delete('/:carId', verifyToken, deleteCar);
 
 module.exports = router;
